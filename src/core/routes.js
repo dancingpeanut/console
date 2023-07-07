@@ -47,6 +47,9 @@ const FederatedProjects = lazy(() =>
 const DevOps = lazy(() =>
   import(/* webpackChunkName: "devops" */ 'devops/App.jsx')
 )
+const Iframe = lazy(() =>
+  import(/* webpackChunkName: "settings" */ 'external/App.jsx')
+)
 const App = lazy(() => import(/* webpackChunkName: "apps" */ 'apps/App.jsx'))
 
 export default [
@@ -91,6 +94,10 @@ export default [
       {
         path: '/settings',
         component: Settings,
+      },
+      {
+        path: '/external',
+        component: Iframe,
       },
       {
         path: '*',

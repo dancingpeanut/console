@@ -42,6 +42,10 @@ class Header extends React.Component {
     this.props.jumpTo(link)
   }
 
+  handleTabLinkClick = link => () => {
+    window.open(link)
+  }
+
   handleDocumentLinkClick = (e, key) => {
     window.open(key)
   }
@@ -78,7 +82,8 @@ class Header extends React.Component {
         <Link to={isAppsPage() && !globals.user ? '/apps' : '/'}>
           <img
             className={styles.logo}
-            src={isAppsPage() ? `/assets/login-logo.svg` : logo}
+            src={logo}
+            style={{ width: 'auto' }}
             alt=""
           />
         </Link>
@@ -116,6 +121,22 @@ class Header extends React.Component {
             >
               {t('WORKBENCH')}
             </Button>
+            {globals.config.externalMenu.map(item => (
+              <Button
+                type="flat"
+                icon="backup"
+                onClick={
+                  item.type === 'iframe'
+                    ? this.handleLinkClick(`/external/${item.name}`)
+                    : this.handleTabLinkClick(item.url)
+                }
+                className={classnames({
+                  [styles.active]: location.pathname === '/',
+                })}
+              >
+                {t(item.title)}
+              </Button>
+            ))}
           </div>
         )}
         <div className={styles.right}>

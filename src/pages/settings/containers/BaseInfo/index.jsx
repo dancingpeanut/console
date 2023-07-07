@@ -39,6 +39,7 @@ export default class BaseInfo extends Component {
   handleEdit = () => {}
 
   render() {
+    const logo = globals.config.logo || '/assets/logo.svg'
     return (
       <div>
         <Banner
@@ -63,7 +64,7 @@ export default class BaseInfo extends Component {
           </div>
           <div className={styles.content}>
             <div className={styles.image}>
-              <img src="/assets/logo.svg" alt="" />
+              <img src={logo} alt="" style={{ width: 'auto' }} />
             </div>
             <div className={styles.info}>
               <Text

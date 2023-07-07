@@ -29,14 +29,16 @@ server:
     clientID: kubesphere
     clientSecret: kubesphere
     url: http://ks-apiserver
+#    url: http://192.168.1.165:30880
     wsUrl: ws://ks-apiserver
 
   # docker image search default url
   dockerHubUrl: https://hub.docker.com
 
 client:
-  title: KubeSphere
-  description: ""
+  title: "海致开发运维管理平台"
+  description: "海致精心打造的开发运维管理平台"
+  logo: "/assets/hz-logo.png"
   encryptKey: kubesphere
 
   version:
@@ -662,3 +664,13 @@ client:
     backup: "https://kubesphere.cloud/self-service/disaster-recovery/"
     inspection: "https://kubesphere.cloud/inspection/"
     light: "https://kubesphere.cloud/lite-cluster/"
+
+  externalMenu:
+    - title: "配置中心"
+      name: "config"
+      type: "iframe"
+      url: "http://kube.haizhi.com/nacos/"
+    - title: "前端联调"
+      name: "test"
+      type: "link"
+      url: "http://dev.haizhi.com"

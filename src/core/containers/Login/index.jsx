@@ -99,10 +99,11 @@ export default class Login extends Component {
 
   render() {
     const { formData, isSubmmiting, errorMessage } = this.state
+    const logo = globals.config.logo || '/assets/logo.svg'
     return (
       <div>
         <a href="/" className={styles.logo}>
-          <img src="/assets/logo.svg" alt="" />
+          <img src={logo} alt="" style={{ width: 'auto' }} />
         </a>
         <div className={styles.login}>
           <div className={styles.header}>{t('WELCOME')}</div>

@@ -18,18 +18,21 @@
 
 import React from 'react'
 import { parse } from 'qs'
-import { debounce, get } from 'lodash'
+import { debounce, get, isEmpty } from 'lodash'
 import { Link } from 'react-router-dom'
 import { Tooltip } from '@kube-design/components'
 import { Status } from 'components/Base'
 import Avatar from 'apps/components/Avatar'
-import { withProjectList, ListPage } from 'components/HOCs/withList'
+import { ListPage, withProjectList } from 'components/HOCs/withList'
 import Table from 'components/Tables/List'
 
 import { getLocalTime } from 'utils'
 
 import OpAppStore from 'stores/openpitrix/application'
+import AppStore from 'stores/openpitrix/app'
+import { toJS } from 'mobx'
 import Banner from './Banner'
+import { getExtraInfoStringFromEnv } from '../../../../utils/myCustomized'
 
 @withProjectList({
   store: new OpAppStore(),
@@ -38,6 +41,25 @@ import Banner from './Banner'
 })
 export default class OPApps extends React.Component {
   type = 'template'
+
+  extraCol = '_extra'
+
+  constructor(props) {
+    super(props)
+
+    this.appStore = new AppStore()
+  }
+
+  componentDidMount() {
+    this.fetchData()
+  }
+
+  fetchData = () => {
+    this.appStore.fetchDetail({
+      page: 1,
+      limit: 999,
+    })
+  }
 
   get prefix() {
     const { workspace, cluster, namespace } = this.props.match.params
@@ -136,6 +158,11 @@ export default class OPApps extends React.Component {
             'YYYY-MM-DD HH:mm:ss'
           ),
       },
+      {
+        title: t('附加信息'),
+        dataIndex: this.extraCol,
+        isHideable: true,
+      },
     ]
   }
 
@@ -209,6 +236,27 @@ export default class OPApps extends React.Component {
 
   render() {
     const { bannerProps, tableProps, match } = this.props
+
+    const details = toJS(this.appStore.detail)
+    if (isEmpty(details)) {
+      return <div></div>
+    }
+
+    const appMap = {}
+    details.items.forEach(d => {
+      appMap[d.app_id] = d
+    })
+
+    tableProps.data.forEach(d => {
+      const targetApp = appMap[d.app_id]
+      if (targetApp !== undefined && targetApp != null) {
+        const abstraction = appMap[d.app_id].abstraction
+        if (abstraction !== undefined && abstraction != null) {
+          d[this.extraCol] = getExtraInfoStringFromEnv(abstraction, d.env)
+        }
+      }
+    })
+
     return (
       <ListPage {...this.props} onMessage={this.handleWatch}>
         <Banner {...bannerProps} match={match} type={this.type} />

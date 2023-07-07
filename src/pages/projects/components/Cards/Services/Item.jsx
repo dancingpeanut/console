@@ -72,6 +72,28 @@ export default class ServiceItem extends React.Component {
           description={t(detail.type)}
         />
         <ServiceAccess data={detail} />
+        <Text
+          description={t('DNS')}
+          title={`${detail.name}.${detail.namespace}.svc.cluster.local`}
+        />
+        <Text
+          description={t('端口')}
+          title={
+            <>
+              {detail.ports.map(item => (
+                <>
+                  <a
+                    target="_blank"
+                    href={`http://${detail.clusterIP}:${item.port}`}
+                  >
+                    {item.port}
+                  </a>
+                  <>&nbsp;</>
+                </>
+              ))}
+            </>
+          }
+        />
       </div>
     )
   }

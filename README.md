@@ -96,3 +96,159 @@ Please submit any KubeSphere Console bugs, issues, and feature requests to [Kube
 Welcome to contribute to KubeSphere Console, see [Contributing Guide](CONTRIBUTING.md).
 
 The KubeSphere localization project has been launched on Crowdin. You can help localize the KubeSphere web console by referring to the [localization guide](docs/join-the-kubesphere-localization-project.md).
+
+## Customized
+
+### 定制化APP部署UI
+
+可在应用的values.schema.json中配置相应信息，安装时会根据配置渲染UI
+
+1. 增加支持选择框
+
+```json
+{
+  "type": "string",
+  "title": "配置中心Namespace",
+  "form": true,
+  "render": "select",
+  "values": ["dev", "prod"]
+}
+```
+
+2. 增加支持AutoComplete记忆功能，配置时可看到改配置最近5次的值
+
+storePaths需配置两处
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "serviceEnv": {
+      "type": "object",
+      "title": "模块参数",
+      "form": true,
+      "properties": {
+        "gitBranch": {
+          "type": "string",
+          "title": "Git分支",
+          "form": true,
+          "render": "latestAutoComplete",
+          "storePath": "serviceEnv.gitBranch"
+        }
+      }
+    }
+  },
+  "required": [
+  ],
+  "storePaths": [
+    "serviceEnv.gitBranch"
+  ]
+}
+```
+
+3. 支持联动，当某一项变更时联动变化另一项
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "serviceEnv": {
+      "type": "object",
+      "title": "模块参数",
+      "form": true,
+      "properties": {
+        "serviceName": {
+          "type": "string",
+          "title": "模块名",
+          "form": true,
+          "render": "select",
+          "values": ["bdp-fe", "tassadar"],
+          "linked": {
+            "path": "serviceEnv.servicePort",
+            "map": {
+              "bdp-fe": "9987",
+              "tassadar": "19987"
+            }
+          }
+        },
+        "servicePort": {
+          "type": "string",
+          "title": "端口",
+          "form": true
+        }
+    }
+  }
+}
+```
+
+
+### 定制化APP附加信息
+
+可在应用的列表页和详情页定制显示项，会从value.yaml中提取信息显示，格式为a.b.c提取yaml
+
+1. 配置，必须严格按照图中配置，以“APP附加信息：”开头，同时放在json的代码块中
+
+```json
+[
+  "env.branch",
+  "env.nacosGroup",
+  "env.nacosNs"
+]
+```
+
+Tips：env.branch表示提取下面的branch
+```yaml
+env:
+  branch: xxx
+```
+
+![Customized APP_EXTRA_INFO](docs/images/app_extra_info_0.png)
+
+2. 列表页
+
+![Customized APP_EXTRA_INFO](docs/images/app_extra_info_1.png)
+
+3. 详情页
+
+![Customized APP_EXTRA_INFO](docs/images/app_extra_info_2.png)
+
+### 定制化菜单
+
+可通过配置文件添加自定义菜单，iframe或者跳转链接
+
+例子：
+
+```yaml
+client:
+  externalMenu:
+    - title: "配置中心"
+      name: "config"
+      type: "iframe"
+      url: "http://console.nacos.io/nacos/index.html#/configurationManagement?dataId=&group=&appName=&namespace=&pageSize=&pageNo="
+    - title: "前端联调"
+      name: "test"
+      type: "link"
+      url: "http://dev.haizhi.com"
+```
+
+上面例子，添加了两个菜单“配置中心”、“前端联调”；
+- “配置中心”为iframe内嵌，点击会打开相应的内嵌页面；
+- “前端联调”为跳转链接，点击会打开新的tab，跳转到相应的页面
+
+![Customized UI](docs/images/customized_menu.png)
+
+### 其他个性化
+
+个性化站点名称、描述、logo
+
+```yaml
+client:
+  title: "海致开发运维管理平台"
+  description: "海致精心打造的开发运维管理平台"
+  logo: "/assets/hz-logo.png"
+```
+
+![Customized UI](docs/images/customized_9.png)
+![Customized UI](docs/images/customized_91.png)
+

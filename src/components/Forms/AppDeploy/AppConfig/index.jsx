@@ -17,7 +17,7 @@
  */
 
 import React from 'react'
-import { set } from 'lodash'
+import { get, set } from 'lodash'
 import { reaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { Loading, Alert } from '@kube-design/components'
@@ -29,6 +29,10 @@ import { getValueObj, getValue } from 'utils/yaml'
 import SchemaForm from './SchemaForm'
 
 import styles from './index.scss'
+import {
+  getLocalStorageItem,
+  setLocalStorageItem,
+} from '../../../../utils/myCustomized'
 
 @observer
 export default class AppConfig extends React.Component {
@@ -64,10 +68,23 @@ export default class AppConfig extends React.Component {
     const packageFiles = this.props.fileStore.files
 
     if (packageFiles && packageFiles['values.yaml']) {
+      const valuesJSON = getValueObj(packageFiles['values.yaml'])
+      const valuesSchema = safeParseJSON(packageFiles['values.schema.json'])
+
+      // 从localStorage获取最近一次的值作为默认值
+      if (valuesSchema.storePaths) {
+        valuesSchema.storePaths.forEach(storePath => {
+          const lv = getLocalStorageItem(storePath)
+          if (lv !== null) {
+            set(valuesJSON, storePath, lv[lv.length - 1])
+          }
+        })
+      }
+
       this.setState({
         valuesYaml: packageFiles['values.yaml'],
-        valuesJSON: getValueObj(packageFiles['values.yaml']),
-        valuesSchema: safeParseJSON(packageFiles['values.schema.json']),
+        valuesJSON,
+        valuesSchema,
         loadingFile: false,
       })
     }
@@ -76,6 +93,24 @@ export default class AppConfig extends React.Component {
   updateFormData = () => {
     const { formData } = this.props
     const { isCodeMode, valuesYaml, valuesJSON, valuesSchema } = this.state
+
+    // 保存到localStorage
+    if (valuesSchema.storePaths) {
+      valuesSchema.storePaths.forEach(storePath => {
+        const nv = get(valuesJSON, storePath)
+        if (nv) {
+          const lv = getLocalStorageItem(storePath)
+          if (lv !== null) {
+            let vv = lv.slice(-5)
+            vv = vv.filter(v => v !== nv)
+            vv.push(nv)
+            setLocalStorageItem(storePath, vv)
+          } else {
+            setLocalStorageItem(storePath, [nv])
+          }
+        }
+      })
+    }
 
     set(
       formData,

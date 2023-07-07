@@ -25,6 +25,7 @@ import { Loading, Tooltip } from '@kube-design/components'
 import { getDisplayName, getLocalTime } from 'utils'
 import { trigger } from 'utils/action'
 import AppStore from 'stores/openpitrix/application'
+import AppStore2 from 'stores/openpitrix/app'
 
 import { Image, Status } from 'components/Base'
 
@@ -33,12 +34,15 @@ import DetailPage from 'projects/containers/Base/Detail'
 import routes from './routes'
 
 import styles from './index.scss'
+import { getExtraInfoFromEnv } from '../../../../../utils/myCustomized'
 
 @inject('rootStore', 'projectStore')
 @observer
 @trigger
 export default class OPAppDetail extends React.Component {
   store = new AppStore()
+
+  store2 = new AppStore2()
 
   componentDidMount() {
     this.fetchData()
@@ -64,7 +68,9 @@ export default class OPAppDetail extends React.Component {
 
   fetchData = () => {
     const { params } = this.props.match
-    this.store.fetchDetail(params)
+    this.store.fetchDetail(params).then(() => {
+      this.store2.fetchDetail({ app_id: this.store.detail.app_id })
+    })
   }
 
   getOperations = () => [
@@ -109,13 +115,14 @@ export default class OPAppDetail extends React.Component {
 
   getAttrs = () => {
     const detail = toJS(this.store.detail)
+    const detail2 = this.store2.detail
     const { cluster, namespace } = this.props.match.params
 
-    if (isEmpty(detail)) {
+    if (isEmpty(detail) || isEmpty(detail2)) {
       return
     }
 
-    return [
+    const result = [
       {
         name: t('CLUSTER'),
         value: cluster,
@@ -149,6 +156,17 @@ export default class OPAppDetail extends React.Component {
         value: detail.owner,
       },
     ]
+
+    // 附加信息
+    const extraInfos = getExtraInfoFromEnv(detail2.abstraction, detail.env)
+    extraInfos.forEach(d => {
+      result.push({
+        name: t(d[0]),
+        value: d[1],
+      })
+    })
+
+    return result
   }
 
   renderStatus = () => {

@@ -19,11 +19,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { map, get, set, every, has, debounce, isEmpty, isNaN } from 'lodash'
-import { Form, Input, Slider, TextArea, Toggle } from '@kube-design/components'
+import {
+  AutoComplete,
+  Form,
+  Input,
+  Select,
+  Slider,
+  TextArea,
+  Toggle,
+} from '@kube-design/components'
 import { Text } from 'components/Base'
 import { NumberInput } from 'components/Inputs'
 
 import styles from './index.scss'
+import { getLocalStorageItem } from '../../../../../utils/myCustomized'
 
 export default class SchemaForm extends React.Component {
   static propTypes = {
@@ -63,9 +72,17 @@ export default class SchemaForm extends React.Component {
 
   renderFormItem = (propObj, propKey, propPath) => {
     const { value } = this.state
+    const linked = propObj.linked
     const attrs = {
       defaultValue: get(value, propPath, ''),
-      onChange: v => this.handleFormChange(set(value, propPath, v)),
+      onChange: v => {
+        this.handleFormChange(set(value, propPath, v))
+        if (linked) {
+          this.handleFormChange(
+            set(value, linked.path.split('.'), linked.map[v])
+          )
+        }
+      },
     }
 
     let content
@@ -89,6 +106,19 @@ export default class SchemaForm extends React.Component {
           )
         } else if (propObj.render === 'textArea') {
           content = <TextArea {...attrs} />
+        } else if (propObj.render === 'select') {
+          const options = []
+          propObj.values.forEach(v => {
+            options.push({
+              label: v,
+              value: v,
+            })
+          })
+          content = <Select options={options} {...attrs} />
+        } else if (propObj.render === 'latestAutoComplete') {
+          const lv = getLocalStorageItem(propObj.storePath)
+          const options = lv !== null ? lv.reverse() : []
+          content = <AutoComplete options={options} {...attrs} />
         } else {
           content = <Input {...attrs} />
         }
