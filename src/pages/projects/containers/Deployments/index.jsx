@@ -69,7 +69,7 @@ export default class Deployments extends React.Component {
   }
 
   get selectActions() {
-    const { tableProps, trigger, name, rootStore } = this.props
+    const { module, tableProps, trigger, name, rootStore } = this.props
     return [
       ...get(tableProps, 'tableActions.selectActions', {}),
       {
@@ -81,6 +81,25 @@ export default class Deployments extends React.Component {
             rowKey: 'uid',
             success: rootStore.routing.query(),
           }),
+      },
+      {
+        key: 'redeploy',
+        text: t('RECREATE'),
+        onClick: () => {
+          const selectValues = tableProps.data
+            .filter(item => tableProps.selectedRowKeys.includes(item.uid))
+            .map(item => {
+              return { name: item.name, namespace: item.namespace }
+            })
+
+          selectValues.forEach(item => {
+            trigger('workload.redeploy', {
+              module,
+              nocheck: true,
+              detail: item,
+            })
+          })
+        },
       },
     ]
   }

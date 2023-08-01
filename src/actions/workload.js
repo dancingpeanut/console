@@ -179,31 +179,51 @@ export default {
   'workload.redeploy': {
     on({ store, detail, module, success, ...props }) {
       const kind = MODULE_KIND_MAP[module]
-      const modal = Modal.open({
-        onOk: () => {
-          store
-            .patch(detail, {
-              spec: {
-                template: {
-                  metadata: {
-                    annotations: {
-                      'kubesphere.io/restartedAt': new Date(),
-                    },
+      if (props.nocheck) {
+        store
+          .patch(detail, {
+            spec: {
+              template: {
+                metadata: {
+                  annotations: {
+                    'kubesphere.io/restartedAt': new Date(),
                   },
                 },
               },
+            },
+          })
+          .then(() => {
+            Notify.success({
+              content: `${t('RECREATE_SUCCESS_DESC')}: ${detail.name}`,
             })
-            .then(() => {
-              Modal.close(modal)
-              Notify.success({ content: t('RECREATE_SUCCESS_DESC') })
-            })
-        },
-        detail,
-        type: kind,
-        modal: RedeployModal,
-        store,
-        ...props,
-      })
+          })
+      } else {
+        const modal = Modal.open({
+          onOk: () => {
+            store
+              .patch(detail, {
+                spec: {
+                  template: {
+                    metadata: {
+                      annotations: {
+                        'kubesphere.io/restartedAt': new Date(),
+                      },
+                    },
+                  },
+                },
+              })
+              .then(() => {
+                Modal.close(modal)
+                Notify.success({ content: t('RECREATE_SUCCESS_DESC') })
+              })
+          },
+          detail,
+          type: kind,
+          modal: RedeployModal,
+          store,
+          ...props,
+        })
+      }
     },
   },
   'workload.revision.rollback': {
