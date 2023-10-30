@@ -126,4 +126,44 @@ export default {
       })
     },
   },
+  'resource.batch.start_1': {
+    on({ store, success, rowKey, ...props }) {
+      const { data, selectedRowKeys } = store.list
+      const selectValues = data
+        .filter(item => selectedRowKeys.includes(item[rowKey]))
+        .map(item => {
+          return { name: item.name, namespace: item.namespace }
+        })
+
+      const selectNames = selectValues.map(item => item.name)
+
+      const modal = Modal.open({
+        onOk: async () => {
+          const reqs = []
+
+          data.forEach(item => {
+            const selectValue = selectValues.find(
+              value =>
+                value.name === item.name && value.namespace === item.namespace
+            )
+
+            if (selectValue) {
+              reqs.push(store.scale(item, 1))
+            }
+          })
+
+          await Promise.all(reqs)
+
+          Modal.close(modal)
+          Notify.success({ content: `${t('ADDED_SUCCESS_DESC')}` })
+          store.setSelectRowKeys([])
+          success && success()
+        },
+        resource: selectNames.join(', '),
+        modal: StopModal,
+        store,
+        ...props,
+      })
+    },
+  },
 }

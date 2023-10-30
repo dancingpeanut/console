@@ -32,5 +32,6 @@ module.exports = {
   // List > Edit YAML
   // List > Start/Pause
   PAUSE: '暂停',
-  START: '启动'
+  START: '启动',
+  ONE_START: '单副本启动'
 };

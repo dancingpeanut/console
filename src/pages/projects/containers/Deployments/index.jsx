@@ -101,6 +101,16 @@ export default class Deployments extends React.Component {
           })
         },
       },
+      {
+        key: 'one_start',
+        text: t('ONE_START'),
+        onClick: () =>
+          trigger('resource.batch.start_1', {
+            type: name,
+            rowKey: 'uid',
+            success: rootStore.routing.query(),
+          }),
+      },
     ]
   }
 
